@@ -54,12 +54,6 @@ public class CrawlTask implements Runnable{
 	
 	private static Logger logger = Logger.getLogger(CrawlTask.class);
 	
-	/**
-	 * 任务目录
-	 */
-	public static String TASK_DIR = null;
-	
-	
 	
 	private static final int DEFAULT_MAX_PAGE_RETRY_COUNT = 1;
 	
@@ -144,17 +138,6 @@ public class CrawlTask implements Runnable{
 		this.maxPageRetryCount = maxPageRetryCount;
 	}
 	
-	/**
-	 * 创建任务目录
-	 * @param taskId
-	 */
-	private void makeTaskDir(String taskId){
-		TASK_DIR = CrawlManager.PROJECT_DIR+"/"+taskId;
-		File task = new File(TASK_DIR);
-		if(!task.exists()){
-			task.mkdirs();
-		}
-	}
 	
 	public String getTaskName(){
 		return taskName;
@@ -601,10 +584,6 @@ public class CrawlTask implements Runnable{
 		return proccess;
 	}
 	
-	private final void seelp(float second) throws InterruptedException{
-			Thread.sleep((long) (second * 1000));
-	}
-	
 	public void handleProccessable(List<Proccessable> proccessables){
 		Map<String,List<Proccessable>> data = new HashMap<String,List<Proccessable>>();
 		List<Request> genjinRequest  = new ArrayList<Request>();
@@ -699,7 +678,7 @@ public class CrawlTask implements Runnable{
 	 * 任务完成销毁任务
 	 */
 	private final void destoryCrawlTask(){
-		logger.info(taskName+"任务完成销毁任务");
+		logger.info(taskName+"任务完成销毁");
 		//释放下载器
 		try {
 			downloader.close();
