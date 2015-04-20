@@ -31,11 +31,6 @@ public final class StartContext implements Serializable{
 	private final HashMap<String, Object> globalAttribute = new HashMap<String, Object>();
 	
 	/**
-	 * 临时属性   每个StartContext完成后会被清除
-	 */
-	private final HashMap<String, Object> tempAttribute = new HashMap<String, Object>();
-	
-	/**
 	 * 定义根据url
 	 */
 	private List<Request> subrequest = new ArrayList<Request>();
@@ -48,13 +43,13 @@ public final class StartContext implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	public StartContext(String url,String tag,int priority,String charSet) {
-		startRequest = createRequest(url, tag, priority,charSet);
+	public StartContext(String url,String charSet) {
+		startRequest = createRequest(url, null, 0,charSet);
 		startRequest.setSeed(true);
 	}
 	 
-	public StartContext(String url,String tag,int priority) {
-		startRequest = createRequest(url, tag, priority);
+	public StartContext(String url) {
+		startRequest = createRequest(url, null, 0);
 		startRequest.setSeed(true);
 	}
 	
@@ -62,10 +57,10 @@ public final class StartContext implements Serializable{
 		this.startRequest = startRequest;
 	}
 	
+	/**
+	 * 构造一个无主体Request的StartContext。通常用来充当SubRequest的容器
+	 */
 	public StartContext(){}
-	
-	
-	
 	
 	 /**
      * 
@@ -164,7 +159,7 @@ public final class StartContext implements Serializable{
 	 * @param key
 	 * @return
 	 */
-	public  Object getGlobalAttribute(String attribute){
+	public  Object getContextAttribute(String attribute){
 		Object value;
 		synchronized (globalAttribute) {
 			value = globalAttribute.get(attribute);
@@ -178,36 +173,14 @@ public final class StartContext implements Serializable{
 	 * @param value
 	 * @return
 	 */
-	public Object putGlobalAttribute(String attribute, Object value) {
+	public Object putContextAttribute(String attribute, Object value) {
 		synchronized (globalAttribute) {
 			globalAttribute.put(attribute, value);
 		}
 		return value;
 	}
 	
-	public  Object getTempAttribute(String attribute){
-		Object value;
-		synchronized (tempAttribute) {
-			value = tempAttribute.get(attribute);
-		}
-		return value;
-	}
-	
-	public Object putTempAttribute(String attribute, Object value) {
-		synchronized (tempAttribute) {
-			tempAttribute.put(attribute, value);
-		}
-		return value;
-	}
 
-	/**
-	 * 清除临时全局信息
-	 */
-	public void clearTempAttribute(){
-		synchronized (tempAttribute) {
-			tempAttribute.clear();
-		}
-	}
 
 	public Pipeline getPipeline() {
 		return pipeline;
@@ -242,7 +215,7 @@ public final class StartContext implements Serializable{
 	@Override
 	public String toString() {
 		return "StartContext [globalAttribute=" + globalAttribute
-				+ ", tempAttribute=" + tempAttribute + ", subrequest="
+				+  ", subrequest="
 				+ subrequest + ", startRequest=" + startRequest + ", pipeline="
 				+ pipeline + "]";
 	}

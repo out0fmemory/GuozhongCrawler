@@ -57,7 +57,7 @@ public enum Status {
 	private final int begin;
 	private final int end;
 
-	private Status(final int begin, final int end) {
+	Status(final int begin, final int end) {
 		this.begin = begin;
 		this.end = end;
 	}

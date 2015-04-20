@@ -91,18 +91,18 @@ public class DefaultPageDownloader extends PageDownloader{
 		int proxyIpRequestCount = 0 ;
 		ProxyIp ip = null;
 		while(true){
-			if(proxyIpRequestCount >= maxProxyRequestCount&&!request.isStartURL()){
+			if(maxProxyRequestCount!=Integer.MAX_VALUE && proxyIpRequestCount >= maxProxyRequestCount&&!request.isStartURL()){
 				log.error(request.getUrl()+"下载次数超过"+maxProxyRequestCount+"被丢弃"); 
 				break;
 			}
 			ip = proxyIpPool.pollProxyIp();//不断去拿最新的代理IP去下载
 			try {
 				page = go(request, task, ip);
-				if(ip.incrementRequestCount() >= proxyIpPool.getMaxValidCount()){
-					System.out.println(ip+"使用达到"+proxyIpPool.getMaxValidCount()+"次");
+				if(ip.incrementRequestCount() >= proxyIpPool.getMaxUseCount()){
+					log.info(ip+"使用达到"+proxyIpPool.getMaxUseCount()+"次");
 				}else{
 					ip.markCache();//缓存IP
-					System.out.println(ip+"使用成功");
+					log.info(ip+"使用成功");
 				}
 				return page;
 			} catch (ProxyIpLoseException e) {

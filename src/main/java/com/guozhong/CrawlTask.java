@@ -57,6 +57,9 @@ public class CrawlTask implements Runnable{
 	
 	private static final int DEFAULT_MAX_PAGE_RETRY_COUNT = 1;
 	
+	/**
+	 * 默认文件下载线程数 
+	 */
 	private static final int DEFAULT_DOWNLOAD_FILE_THREAD = 3;
 	
 	private  String taskName ;
@@ -84,7 +87,7 @@ public class CrawlTask implements Runnable{
 	
 	private CountableThreadPool offlineHandleThreadPool ; //离线处理线程
 	
-	private int maxPageRetryCount ;
+	private int maxPageRetryCount = DEFAULT_MAX_PAGE_RETRY_COUNT;
 	
 	private Map<String,PageProcessor> taskPageProccess = new HashMap<String,PageProcessor>();
 	
@@ -128,14 +131,10 @@ public class CrawlTask implements Runnable{
 	 */
 	private DynamicEntrance dynamicEntrance ;
 	
-	public CrawlTask(String name){
-		this(name,DEFAULT_MAX_PAGE_RETRY_COUNT);
-	}
 	
-	public CrawlTask(String name,int maxPageRetryCount){
+	public CrawlTask(String name){
 		name = name.replaceAll("[/\\\\*\\?<>|]", "_");//  /\*?<>|  替换文件名非法字符
 		this.taskName  =name;
-		this.maxPageRetryCount = maxPageRetryCount;
 	}
 	
 	
@@ -188,13 +187,18 @@ public class CrawlTask implements Runnable{
 		allStartBackups.add(context);
 	}
 	
-	public void addStartURL(String url,Map<String,Object> extra){
-		StartContext context = new StartContext(url, null, 0);
+	public void addStartUrl(String url,Map<String,Object> extra){
+		StartContext context = new StartContext(url);
 		if(extra != null){
 			for (Map.Entry<String, Object> keyValuePair :  extra.entrySet()) {
-				context.putGlobalAttribute(keyValuePair.getKey(), keyValuePair.getValue());
+				context.putContextAttribute(keyValuePair.getKey(), keyValuePair.getValue());
 			}
 		}
+		addStartContxt(context);
+	}
+	
+	public void addStartUrl(String url){
+		StartContext context = new StartContext(url);
 		addStartContxt(context);
 	}
 	
@@ -208,13 +212,13 @@ public class CrawlTask implements Runnable{
 	public void addStartUrl(String url,Map<String,Object> extra,String charSet){
 		StartContext context = null;
 		if(charSet != null){
-			context = new StartContext(url, null, 0, charSet);
+			context = new StartContext( url , charSet);
 		}else{
-			context = new StartContext(url, null, 0);
+			context = new StartContext(url);
 		}
 		if(extra != null){
 			for (Map.Entry<String, Object> keyValuePair :  extra.entrySet()) {
-				context.putGlobalAttribute(keyValuePair.getKey(), keyValuePair.getValue());
+				context.putContextAttribute(keyValuePair.getKey(), keyValuePair.getValue());
 			}
 		}
 		addStartContxt(context);
@@ -231,6 +235,7 @@ public class CrawlTask implements Runnable{
 	
 	public void pushRequest(Request request){
 		if(request != null){
+			request.recodeRequest();//记录请求
 			this.requestQueue.add(request);
 		}
 	}
@@ -433,27 +438,17 @@ public class CrawlTask implements Runnable{
 				clearStartRequest();//清除之前的入口URL
 				logger.info("清除上个任务入口URL");
 			}
-			dynamicEntrance.onStartLoad();
 			
-			String charSet = dynamicEntrance.getEntranceCharSet();
+			dynamicEntrance.onStartLoad();
 			
 			List<String> urls = dynamicEntrance.load();
 			if(urls != null){
 				for (String url : urls) {
-					addStartUrl(url, null, charSet);
-				}
-			}
-			Map<String,Map<String,Object>> paramsUrls = dynamicEntrance.load2();
-			if(paramsUrls != null){
-				Set<Entry<String, Map<String, Object>>> keyValue = paramsUrls.entrySet();
-				for (Entry<String, Map<String, Object>> entry : keyValue) {
-					String url = entry.getKey();
-					Map<String,Object> params = entry.getValue();
-					addStartUrl(url, params, charSet);
+					addStartUrl(url);
 				}
 			}
 			
-			List<StartContext> startContexts = dynamicEntrance.getStartContext();
+			List<StartContext> startContexts = dynamicEntrance.loadStartContext();
 			if(startContexts != null){
 				for (StartContext sc : startContexts) {
 					addStartContxt(sc);
@@ -525,8 +520,8 @@ public class CrawlTask implements Runnable{
 				}else if(page instanceof RetryPage){
 					RetryPage retryPage = (RetryPage) page;
 					if(retryPage.getRetryCount() < maxPageRetryCount){
-						retryPage.record();
-						pushRequest(retryPage.getRequest());
+						Request retryRequest = retryPage.getRequest();
+						pushRequest(retryRequest);
 						logger.warn("重新请求URL："+retryPage.getRequest().getUrl());
 					}else{
 						logger.error("下载次数超过"+maxPageRetryCount+":"+retryPage.getRequest().getUrl()+" 被丢弃");
@@ -543,7 +538,6 @@ public class CrawlTask implements Runnable{
 						e.printStackTrace();
 						logger.error("离线处理异常URL:"+page.getRequest().getUrl(),e);
 					}
-					RetryPage.clearCount(page.getRequest().getUrl());
 				}
 			}
 		});
@@ -554,9 +548,6 @@ public class CrawlTask implements Runnable{
 	 * @return
 	 */
 	private boolean nextStartUrlQueue() {
-		if(context != null){//清除上一个上下文的临时信息
-			context.clearTempAttribute();
-		}
 		context = startRequests.poll();
 		if(context != null){
 			logger.debug("startRequests : "+context.getStartRequest().getUrl());

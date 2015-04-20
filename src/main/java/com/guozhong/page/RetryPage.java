@@ -12,23 +12,14 @@ public class RetryPage extends Page {
 
     private final Request request;
     
-    private final int retryCount ;
-    
-    private static final Map<String, Integer> retryCounts = new ConcurrentHashMap<String,Integer>();
-    
     private final DriverPool driverPool ;
+    
     private  int driverIndex ;
 
     public RetryPage(final Request request,final  DriverPool driverPool,int driverIndex ) {
         this.request = request;
         this.driverPool = driverPool;
         this.driverIndex = driverIndex;
-        Integer oldCount = retryCounts.get(request.getUrl());
-        if(oldCount == null){
-        	oldCount = 0;
-        }
-        this.retryCount=oldCount;
-        retryCounts.put(request.getUrl(), retryCount);
     }
 
 
@@ -52,18 +43,10 @@ public class RetryPage extends Page {
 		return null;
 	}
 
-
-	public void record(){
-		retryCounts.put(request.getUrl(), retryCount+1);
-	}
-
 	public int getRetryCount() {
-		return retryCounts.get(request.getUrl());
+		return request.getHistoryCount();
 	}
 
-	public static void clearCount(String url){
-		retryCounts.remove(url);
-	}
 	
 	@Override
 	public Object getRequestAttribute(String attribute) {

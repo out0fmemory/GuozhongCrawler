@@ -23,7 +23,7 @@ public class Request implements Proccessable,Comparable<Request>{
      */
     private boolean seed = false;
     /**
-     * request附加的属性
+     * request属性
      */
     private HashMap<String,Object> attributes = null;
     
@@ -55,11 +55,24 @@ public class Request implements Proccessable,Comparable<Request>{
      */
     private boolean isBinary = false;
     
+    /**
+     * 记录Request被发送的次数
+     */
+    private int requestCount = 0;
+    
     public Request(){
     }
     
     public Request(boolean seed){
     	this.seed = seed;
+    }
+    
+    public void recodeRequest(){
+    	requestCount++;
+    }
+    
+    public int getHistoryCount(){
+    	return requestCount;
     }
     
     public final Request setAttribute(String attribute,Object value){
@@ -85,8 +98,6 @@ public class Request implements Proccessable,Comparable<Request>{
 	public void setUrl(String url) {
 		this.url = url;
 	}
-
-    
 
 	/**
 	 * 是否是种子URL
@@ -220,15 +231,6 @@ public class Request implements Proccessable,Comparable<Request>{
     	}else{
     		return -1;
     	}
-	}
-
-	@Override
-	public String toString() {
-		return "Request [url=" + url + ", method=" + method + ", seed=" + seed
-				+ ", attributes=" + attributes + ", requestParams="
-				+ requestParams + ", headers=" + headers + ", tag=" + tag
-				+ ", priority=" + priority + ", isDefaultDownload="
-				+ isDefaultDownload + ", isBinary=" + isBinary + "]";
 	}
 
 	@Override

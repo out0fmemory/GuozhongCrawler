@@ -1,9 +1,7 @@
 package com.guozhong.proxy;
 
-import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.List;
-import java.util.Random;
 import java.util.Stack;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -23,7 +21,7 @@ public abstract class ProxyIpPool {
 	 */
 	public static final int DEFAULT_CACHE_COUNT = 10;
 	
-	public static final int DEFAULT_MAX_VALID_COUNT = 5;
+	public static final int DEFAULT_USE_VALID_COUNT = 5;
 	
 	private final LinkedBlockingQueue<ProxyIp> cache = new LinkedBlockingQueue<ProxyIp>();
 	
@@ -40,7 +38,7 @@ public abstract class ProxyIpPool {
 	 * 每个IP默认最大有效请求次数。当一个IP有效请求次数达到该值后，为确保ip不会因为请求次数过多而被封会从缓存中移除
 	 * 
 	 */
-	private int max_valid_count  = DEFAULT_MAX_VALID_COUNT;
+	private int max_use_count  = DEFAULT_USE_VALID_COUNT;
 	
 	/**
 	 * Ip过期时间
@@ -52,18 +50,18 @@ public abstract class ProxyIpPool {
 	 * 建议是线程数的5倍
 	 * @param initSize
 	 */
-	public ProxyIpPool(int initSize,long pastTime,int max_valid_count){
+	public ProxyIpPool(int initSize,long pastTime,int max_use_count){
 		this.initSize = initSize;
 		this.pastTime = pastTime;
-		this.max_valid_count = max_valid_count;
+		this.max_use_count = max_use_count;
 	}
 	
-	public int getMaxValidCount() {
-		return max_valid_count;
+	public int getMaxUseCount() {
+		return max_use_count;
 	}
 
 	public void setMaxValidCount(int max_valid_count) {
-		this.max_valid_count = max_valid_count;
+		this.max_use_count = max_valid_count;
 	}
 
 	public ProxyIp pollProxyIp(){

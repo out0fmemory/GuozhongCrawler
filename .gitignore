@@ -3,3 +3,4 @@
 .settings/
 .project
 .classpath
+src/main/java/com/guozhong/proxy/ProxyIpUtil.java

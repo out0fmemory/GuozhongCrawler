@@ -117,7 +117,7 @@ public class SeleniumDownloader extends PageDownloader {
 			ip = proxyIpPool.pollProxyIp();//不断去拿最新的代理IP去下载
 			try {
 				page = go(request, task, ip);
-				if(ip.incrementRequestCount() >= proxyIpPool.getMaxValidCount()){
+				if(ip.incrementRequestCount() >= proxyIpPool.getMaxUseCount()){
 					//System.out.println(ip+"使用达到"+proxyIpPool.getMaxValidCount()+"次");
 				}else{
 					ip.markCache();//缓存IP

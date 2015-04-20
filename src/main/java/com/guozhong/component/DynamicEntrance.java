@@ -25,18 +25,17 @@ public interface DynamicEntrance {
 	public void onStartLoad();
 	
 	/**
-	 * 加载入口URL
+	 * 简单加载所有入口URL。每个url是一个StartContext。并且页面编码等所有参数使用默认值。
 	 * @return
 	 */
 	public List<String> load();
 	
+	
 	/**
-	 * 加载入口URL  带附加参数的方法
+	 * 自定义所有StartContext。便于自定义参数和跟进url(SubRequest)、编码等
 	 * @return
 	 */
-	public Map<String,Map<String,Object>> load2();
-	
-	public List<StartContext> getStartContext();
+	public List<StartContext> loadStartContext();
 	
 	/**
 	 * 加载完成之后回调
@@ -44,9 +43,4 @@ public interface DynamicEntrance {
 	public void onLoadComplete();
 	
 	
-	/**
-	 * 入口URL页面的编码格式不设置默认gbk
-	 * @return
-	 */
-	public String getEntranceCharSet();
 }
